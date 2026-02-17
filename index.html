@@ -15,6 +15,7 @@
             background-color: #fce4ec;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            -webkit-tap-highlight-color: transparent; /* Mobilde tıklama grisini kaldır */
         }
 
         .container {
@@ -25,7 +26,7 @@
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            padding: 30px 20px;
+            padding: 20px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -33,69 +34,51 @@
             justify-content: center;
             position: relative;
             z-index: 10;
-            transition: all 0.3s ease;
         }
 
         h1 {
             color: #d81b60;
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             margin-bottom: 10px;
         }
 
         p {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 1rem;
         }
 
         .buttons {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             width: 100%;
             margin-bottom: 10px;
         }
 
         button {
-            padding: 12px 30px;
+            padding: 12px 25px;
             font-size: 1rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.2s ease; 
+            transition: transform 0.1s; 
         }
 
-        #yesBtn {
-            background-color: #4caf50;
-            color: white;
-        }
+        #yesBtn { background-color: #4caf50; color: white; }
+        #noBtn { background-color: #f44336; color: white; z-index: 999; }
 
-        #noBtn {
-            background-color: #f44336;
-            color: white;
-            z-index: 999; /* En üstte kalsın kaçarken */
-        }
-
-        /* Yeni Konfeti Butonu Stili */
+        /* Daha Fazla Konfeti Butonu */
         #moreConfettiBtn {
             background: linear-gradient(45deg, #ff9800, #ff5722);
             color: white;
             margin-top: 15px;
             width: 100%;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        #moreConfettiBtn:active {
-            transform: scale(0.95); /* Basınca küçülme efekti */
+            display: none; /* Başlangıçta gizli */
         }
 
-        /* Başlangıçta gizli olan kutlama ekranı */
         #success-screen {
             display: none;
             width: 100%;
@@ -106,18 +89,16 @@
             border-radius: 15px;
             margin-top: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #000; /* Video yüklenirken siyah dursun */
         }
-
     </style>
 </head>
 <body>
 
     <div class="container">
-        
         <div id="question-screen">
             <h1>Beni Affeder Misin? 🥺</h1>
-            <p>Bilmeden öyle dedim özür dilerim</p>
-            
+            <p>Bir hata ettim, telafi etmek istiyorum.</p>
             <div class="buttons">
                 <button id="yesBtn">Evet</button>
                 <button id="noBtn">Hayır</button>
@@ -126,100 +107,78 @@
 
         <div id="success-screen">
             <h1 style="color: #4caf50;">Teşekkür Ederim! ❤️</h1>
-            <p style="margin-bottom: 5px;">Söz veriyorum, seni üzmeyeceğim.</p>
             
-            <video id="celebrationVideo" playsinline loop>
+            <video id="celebrationVideo" playsinline webkit-playsinline preload="auto" loop>
                 <source src="yippie.mp4" type="video/mp4">
-                Tarayıcınız bu videoyu oynatamıyor.
             </video>
 
-            <button id="moreConfettiBtn">🎉 Daha Fazla Konfeti! 🎉</button>
+            <button id="moreConfettiBtn">🎉 Konfeti Patlat! 🎉</button>
         </div>
-
     </div>
 
     <script>
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
-        const moreConfettiBtn = document.getElementById('moreConfettiBtn');
+        const moreBtn = document.getElementById('moreConfettiBtn');
         const questionScreen = document.getElementById('question-screen');
         const successScreen = document.getElementById('success-screen');
         const video = document.getElementById('celebrationVideo');
 
-        // --- KAÇAN BUTON KODU ---
+        // --- KAÇAN BUTON (Değişmedi) ---
         function moveButton() {
             noBtn.style.position = 'fixed'; 
             const maxWidth = window.innerWidth - noBtn.offsetWidth - 20;
             const maxHeight = window.innerHeight - noBtn.offsetHeight - 20;
-            const newLeft = Math.random() * maxWidth;
-            const newTop = Math.random() * maxHeight;
-            
-            noBtn.style.left = Math.max(20, newLeft) + 'px';
-            noBtn.style.top = Math.max(20, newTop) + 'px';
+            noBtn.style.left = Math.max(20, Math.random() * maxWidth) + 'px';
+            noBtn.style.top = Math.max(20, Math.random() * maxHeight) + 'px';
         }
-
-        noBtn.addEventListener('mouseover', moveButton);
         noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveButton(); });
+        noBtn.addEventListener('mouseover', moveButton);
         noBtn.addEventListener('click', (e) => { e.preventDefault(); moveButton(); });
 
-        // --- EVET BUTONU ---
+        // --- EVET BUTONU (OPTİMİZE EDİLDİ) ---
         yesBtn.addEventListener('click', () => {
-            // Ekranları değiştir
+            // 1. Ekranları Hızlıca Değiştir
             questionScreen.style.display = 'none';
             noBtn.style.display = 'none';
             successScreen.style.display = 'block';
+            moreBtn.style.display = 'block';
 
-            // Videoyu oynat
+            // 2. Videoyu Başlat (Hata yakalama ile)
             video.play().catch(() => {
-                video.muted = true;
+                video.muted = true; // Otomatik oynatma engellenirse sessiz başlat
                 video.play();
             });
 
-            // İlk açılış konfetisi
-            triggerConfetti();
+            // 3. Konfeti: Sadece TEK BİR patlama (Loop yok, donmayı engeller)
+            fireConfetti();
         });
 
-        // --- EKSTRA KONFETİ BUTONU ---
-        moreConfettiBtn.addEventListener('click', () => {
-            // Kenarlardan fırlat
-            triggerSideConfetti();
+        // --- DAHA FAZLA KONFETİ ---
+        moreBtn.addEventListener('click', () => {
+            fireConfetti();
         });
 
-        // Fonksiyon: Kenarlardan Konfeti Yağdır
-        function triggerSideConfetti() {
-            var end = Date.now() + 500; // 0.5 saniye sürsün
+        // --- HAFİFLETİLMİŞ KONFETİ FONKSİYONU ---
+        // Bilgisayarı yormayan, kısa ve net patlama
+        function fireConfetti() {
+            const count = 200;
+            const defaults = {
+                origin: { y: 0.7 },
+                zIndex: 9999 // Videonun üstünde kalsın
+            };
 
-            (function frame() {
-                // Sol taraftan fırlat
-                confetti({
-                    particleCount: 5,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0, y: 0.7 }, // Sol alt kenar
-                    colors: ['#ff0000', '#00ff00', '#0000ff']
-                });
-                // Sağ taraftan fırlat
-                confetti({
-                    particleCount: 5,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1, y: 0.7 }, // Sağ alt kenar
-                    colors: ['#ff0000', '#00ff00', '#0000ff']
-                });
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
 
-                if (Date.now() < end) {
-                    requestAnimationFrame(frame);
-                }
-            }());
-        }
-
-        // Fonksiyon: İlk Açılış Konfetisi (Ortadan)
-        function triggerConfetti() {
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
         }
     </script>
 </body>
