@@ -9,60 +9,72 @@
         body {
             margin: 0;
             height: 100vh;
+            height: 100dvh; 
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #fce4ec;
+            background-color: #fce4ec; 
             font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            transition: background-color 0.2s;
+            overflow: hidden; 
+            transition: background-color 0.5s; /* Renk geçişi yumuşak olsun */
         }
 
         .container {
-            width: 90%;
-            max-width: 400px;
+            width: 85%;
+            max-width: 350px;
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            padding: 30px 20px;
+            padding: 25px 20px;
             text-align: center;
             position: relative;
             z-index: 10;
-            transition: transform 0.2s;
+            /* Sallantı animasyonları silindi */
         }
 
-        h1 { color: #d81b60; font-size: 1.5rem; margin-bottom: 10px; }
+        h1 { color: #d81b60; font-size: 1.4rem; margin-bottom: 10px; }
         p { color: #666; font-size: 1rem; margin-bottom: 20px; }
 
         .buttons {
             display: flex;
             justify-content: center;
             gap: 15px;
+            flex-wrap: wrap;
         }
 
         button {
-            padding: 12px 30px;
+            padding: 12px 25px;
             font-size: 1rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
+            min-width: 110px;
             transition: transform 0.1s;
         }
 
         #yesBtn { background-color: #4caf50; color: white; }
         #noBtn { background-color: #f44336; color: white; }
 
-        /* Hata Ekranı Başlangıçta Gizli */
-        #error-screen {
-            display: none;
-            text-align: center;
-        }
+        /* Hata Ekranı */
+        #error-screen { display: none; }
 
-        /* Glitch (Bozulma) Efektleri */
-        .glitch-1 { transform: rotate(3deg); filter: hue-rotate(90deg); }
-        .glitch-2 { transform: rotate(-5deg) scale(0.9); filter: invert(1); }
-        .glitch-3 { transform: skewX(20deg); filter: contrast(200%); }
+        /* Hata Ekranı Butonları */
+        #fixBtn { 
+            background: #2e7d32; 
+            color: white; 
+            width: 100%; 
+            margin-bottom: 15px;
+        }
+        
+        #escapeBtn { 
+            background: #000; 
+            color: white; 
+            width: auto;
+            min-width: 150px;
+            position: relative; 
+            z-index: 99999;
+        }
 
     </style>
 </head>
@@ -70,7 +82,7 @@
 
     <div class="container" id="mainBox">
         
-        <div id="normal-content">
+        <div id="initial-ui">
             <h1>Beni Affeder Misin? 🥺</h1>
             <p>Hala biraz kırgın mısın?</p>
             <div class="buttons">
@@ -80,26 +92,28 @@
         </div>
 
         <div id="error-screen">
-            <h2 style="color: red; font-family: monospace;">⚠️ SİSTEM HATASI</h2>
-            <p style="color: black; font-family: monospace;">
-                'iyiyiz herhalde' komutu veritabanında bulunamadı.<br><br>
-                <b>Şununla değiştirmek ister misiniz?</b>
+            <h2 style="color: #d32f2f; margin: 0; font-size: 1.3rem;">⚠️ SİSTEM HATASI</h2>
+            <p style="color: #000; font-weight: bold; margin: 15px 0; font-size: 0.95rem;">
+                Girdi: "iyiyiz herhalde"<br>
+                Durum: <span style="color: red;">GEÇERSİZ</span>
+            </p>
+            <p style="font-size: 0.9rem; color: #555;">
+                Veritabanını onarmak için:
             </p>
             
-            <h1 style="color: #2e7d32; font-size: 2rem;">İYİYİZZ ❤️</h1>
+            <h1 style="color: #2e7d32; margin: 10px 0;">"İYİYİZZ" ❤️</h1>
 
-            <div class="buttons" style="margin-top: 20px;">
-                <button id="fixBtn" style="background: #2e7d32; color: white;">EVET, DÜZELT</button>
-                <button id="escapeBtn" style="background: black; color: white;">HAYIR</button>
+            <div class="buttons" style="flex-direction: column; align-items: center;">
+                <button id="fixBtn">EVET, DÜZELT</button>
+                <button id="escapeBtn">HAYIR</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // Elementleri Seç
         const box = document.getElementById('mainBox');
-        const normalContent = document.getElementById('normal-content');
+        const initialUI = document.getElementById('initial-ui');
         const errorScreen = document.getElementById('error-screen');
         
         const yesBtn = document.getElementById('yesBtn');
@@ -108,66 +122,65 @@
         const fixBtn = document.getElementById('fixBtn');
         const escapeBtn = document.getElementById('escapeBtn');
 
-        let clickCount = 0;
+        let clickCount = 0;   
+        let escapeCount = 0;  
 
-        // --- KADEMELİ BOZULMA FONKSİYONU ---
+        // --- KADEMELİ BOZULMA (SALLANTISIZ) ---
         function triggerGlitch() {
             clickCount++;
 
             if (clickCount === 1) {
-                // Hafif Bozulma
                 document.body.style.backgroundColor = "#ffcdd2"; // Arka plan kızarır
-                box.classList.add('glitch-1');
-                yesBtn.innerText = "E-evet?";
-                noBtn.innerText = "H-hayır?";
+                yesBtn.innerText = "Emin misin?";
+                noBtn.innerText = "Tekrar düşün?";
             } 
             else if (clickCount === 2) {
-                // Orta Bozulma
-                document.body.style.backgroundColor = "#b71c1c"; // Koyu kırmızı
-                box.classList.remove('glitch-1');
-                box.classList.add('glitch-2');
-                yesBtn.innerText = "SİSTEM";
-                noBtn.innerText = "HATASI";
+                document.body.style.backgroundColor = "#ef9a9a"; // Daha koyu kırmızı
+                // SALLANTI KODU SİLİNDİ
+                yesBtn.innerText = "HATA";
+                noBtn.innerText = "HATA";
             } 
             else if (clickCount >= 3) {
-                // ÇÖKÜŞ -> HATA EKRANINA GEÇİŞ
-                box.classList.remove('glitch-2');
-                box.style.transform = "none"; // Kutuyu düzelt
-                box.style.filter = "none"; // Renkleri düzelt
-                document.body.style.backgroundColor = "#000"; // Arka plan siyah (Terminal gibi)
-                
-                normalContent.style.display = 'none';
+                initialUI.style.display = 'none';
                 errorScreen.style.display = 'block';
+                document.body.style.backgroundColor = "#b71c1c"; // Alarm kırmızısı
             }
         }
 
-        // İlk ekrandaki butonlara basınca bozulma başlasın
         yesBtn.addEventListener('click', triggerGlitch);
         noBtn.addEventListener('click', triggerGlitch);
 
 
-        // --- HAYIR BUTONU KAÇMA KODU (İLK PROJEDEKİ GİBİ) ---
+        // --- MOBİL UYUMLU KAÇIŞ + VİCDAN AZABI ---
         function moveButton() {
-            // Sadece hata ekranındaysak çalışsın
             if (errorScreen.style.display !== 'block') return;
 
-            escapeBtn.style.position = 'fixed'; // Ekranda serbest dolaşsın
+            // VİCDAN AZABI SAYACI
+            escapeCount++;
+            if (escapeCount === 3) {
+                alert("Hala deniyor musun? 🥺\n\nDemek o kadar uğraştan sonra 'Hayır' demek istiyorsun...");
+            }
+
+            // KAÇIŞ KOORDİNATLARI
+            escapeBtn.style.position = 'fixed';
             
-            // Ekran sınırlarını hesapla (Telefonda taşmasın diye biraz pay bıraktık)
-            const maxWidth = window.innerWidth - escapeBtn.offsetWidth - 20;
-            const maxHeight = window.innerHeight - escapeBtn.offsetHeight - 20;
+            const btnW = escapeBtn.offsetWidth;
+            const btnH = escapeBtn.offsetHeight;
+            const padding = 25; // Kenarlardan 25px içeride
 
-            // Rastgele pozisyon
-            const randomX = Math.random() * maxWidth;
-            const randomY = Math.random() * maxHeight;
+            const maxX = window.innerWidth - btnW - padding;
+            const maxY = window.innerHeight - btnH - padding;
 
-            escapeBtn.style.left = Math.max(10, randomX) + 'px';
-            escapeBtn.style.top = Math.max(10, randomY) + 'px';
+            const randomX = Math.max(padding, Math.random() * maxX);
+            const randomY = Math.max(padding, Math.random() * maxY);
+
+            escapeBtn.style.left = randomX + 'px';
+            escapeBtn.style.top = randomY + 'px';
         }
 
-        // Hem dokunma hem mouse ile kaçsın
+        // Dokunma ve Tıklama Olayları
         escapeBtn.addEventListener('touchstart', (e) => { 
-            e.preventDefault(); // Tıklamayı engelle
+            e.preventDefault(); 
             moveButton(); 
         });
         escapeBtn.addEventListener('mouseover', moveButton);
@@ -177,23 +190,17 @@
         });
 
 
-        // --- EVET (DÜZELT) BUTONU ---
+        // --- DÜZELTME ---
         fixBtn.addEventListener('click', () => {
-            document.body.style.backgroundColor = "#c8e6c9"; // Mutlu yeşil arka plan
+            document.body.style.backgroundColor = "#c8e6c9"; 
+            
             errorScreen.innerHTML = `
-                <h1 style="color: #2e7d32; font-size: 2rem;">HATA DÜZELTİLDİ! ✅</h1>
-                <p style="font-size: 1.2rem;">Durum: <b>İYİYİZZ ❤️</b></p>
+                <h1 style="color: #2e7d32; font-size: 1.8rem;">DÜZELDİ! ✅</h1>
+                <p style="font-size: 1.2rem; color: #333;">Durum: <b>İYİYİZZ ❤️</b></p>
                 <p>Veritabanı güncellendi.</p>
             `;
             
-            // Konfeti Patlat
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-            
-            // Ekstra konfeti
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             setTimeout(() => confetti({ particleCount: 100, spread: 100, origin: { y: 0.7 } }), 500);
         });
 
