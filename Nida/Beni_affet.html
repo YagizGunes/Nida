@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Beni Affeder Misin?</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fce4ec;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            height: auto; 
+            min-height: 300px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 30px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: #d81b60;
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s ease; 
+        }
+
+        #yesBtn {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        #noBtn {
+            background-color: #f44336;
+            color: white;
+            z-index: 999; /* En üstte kalsın kaçarken */
+        }
+
+        /* Yeni Konfeti Butonu Stili */
+        #moreConfettiBtn {
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            color: white;
+            margin-top: 15px;
+            width: 100%;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #moreConfettiBtn:active {
+            transform: scale(0.95); /* Basınca küçülme efekti */
+        }
+
+        /* Başlangıçta gizli olan kutlama ekranı */
+        #success-screen {
+            display: none;
+            width: 100%;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 15px;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="question-screen">
+            <h1>Beni Affeder Misin? 🥺</h1>
+            <p>Bir hata ettim, telafi etmek istiyorum.</p>
+            
+            <div class="buttons">
+                <button id="yesBtn">Evet</button>
+                <button id="noBtn">Hayır</button>
+            </div>
+        </div>
+
+        <div id="success-screen">
+            <h1 style="color: #4caf50;">Teşekkür Ederim! ❤️</h1>
+            <p style="margin-bottom: 5px;">Söz veriyorum, seni üzmeyeceğim.</p>
+            
+            <video id="celebrationVideo" playsinline loop>
+                <source src="yippie.mp4" type="video/mp4">
+                Tarayıcınız bu videoyu oynatamıyor.
+            </video>
+
+            <button id="moreConfettiBtn">🎉 Daha Fazla Konfeti! 🎉</button>
+        </div>
+
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const moreConfettiBtn = document.getElementById('moreConfettiBtn');
+        const questionScreen = document.getElementById('question-screen');
+        const successScreen = document.getElementById('success-screen');
+        const video = document.getElementById('celebrationVideo');
+
+        // --- KAÇAN BUTON KODU ---
+        function moveButton() {
+            noBtn.style.position = 'fixed'; 
+            const maxWidth = window.innerWidth - noBtn.offsetWidth - 20;
+            const maxHeight = window.innerHeight - noBtn.offsetHeight - 20;
+            const newLeft = Math.random() * maxWidth;
+            const newTop = Math.random() * maxHeight;
+            
+            noBtn.style.left = Math.max(20, newLeft) + 'px';
+            noBtn.style.top = Math.max(20, newTop) + 'px';
+        }
+
+        noBtn.addEventListener('mouseover', moveButton);
+        noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveButton(); });
+        noBtn.addEventListener('click', (e) => { e.preventDefault(); moveButton(); });
+
+        // --- EVET BUTONU ---
+        yesBtn.addEventListener('click', () => {
+            // Ekranları değiştir
+            questionScreen.style.display = 'none';
+            noBtn.style.display = 'none';
+            successScreen.style.display = 'block';
+
+            // Videoyu oynat
+            video.play().catch(() => {
+                video.muted = true;
+                video.play();
+            });
+
+            // İlk açılış konfetisi
+            triggerConfetti();
+        });
+
+        // --- EKSTRA KONFETİ BUTONU ---
+        moreConfettiBtn.addEventListener('click', () => {
+            // Kenarlardan fırlat
+            triggerSideConfetti();
+        });
+
+        // Fonksiyon: Kenarlardan Konfeti Yağdır
+        function triggerSideConfetti() {
+            var end = Date.now() + 500; // 0.5 saniye sürsün
+
+            (function frame() {
+                // Sol taraftan fırlat
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.7 }, // Sol alt kenar
+                    colors: ['#ff0000', '#00ff00', '#0000ff']
+                });
+                // Sağ taraftan fırlat
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.7 }, // Sağ alt kenar
+                    colors: ['#ff0000', '#00ff00', '#0000ff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        // Fonksiyon: İlk Açılış Konfetisi (Ortadan)
+        function triggerConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+    </script>
+</body>
+</html>
